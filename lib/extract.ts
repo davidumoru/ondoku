@@ -92,6 +92,14 @@ async function fetchPage(url: string, ua: string): Promise<string> {
   return decodeHtml(buffer, contentType);
 }
 
+function resolveUrls(result: DefuddleResponse, base: string): DefuddleResponse {
+  const resolve = (u: string | null | undefined) => {
+    if (!u) return u;
+    try { return new URL(u, base).href; } catch { return u; }
+  };
+  return { ...result, favicon: resolve(result.favicon), image: resolve(result.image) };
+}
+
 export async function extractArticle(url: string): Promise<DefuddleResponse> {
   const html = await fetchPage(url, DEFAULT_UA);
   const result = await Defuddle(html, url);
@@ -100,9 +108,9 @@ export async function extractArticle(url: string): Promise<DefuddleResponse> {
     try {
       const botHtml = await fetchPage(url, BOT_UA);
       const botResult = await Defuddle(botHtml, url);
-      if (botResult.wordCount > 0) return botResult;
+      if (botResult.wordCount > 0) return resolveUrls(botResult, url);
     } catch {}
   }
 
-  return result;
+  return resolveUrls(result, url);
 }
