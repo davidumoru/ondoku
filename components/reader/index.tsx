@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Share2, FileDown, Check } from "lucide-react";
+import TurndownService from "turndown";
 import type { DefuddleResponse } from "defuddle/node";
 
 const themes = {
@@ -81,6 +82,8 @@ interface Props {
   url: string;
 }
 
+const td = new TurndownService({ headingStyle: "atx", codeBlockStyle: "fenced" });
+
 export function Reader({ article }: Props) {
   const router = useRouter();
   const [prefs, setPrefs] = useState<Prefs>(() => {
@@ -117,8 +120,35 @@ export function Reader({ article }: Props) {
   }, [showSettings]);
   const readingTime = Math.ceil((article.wordCount ?? 0) / 200);
 
+  const [copied, setCopied] = useState<"share" | "md" | null>(null);
+
   function set<K extends keyof Prefs>(key: K, value: Prefs[K]) {
     setPrefs((p) => ({ ...p, [key]: value }));
+  }
+
+  function flash(type: "share" | "md") {
+    setCopied(type);
+    setTimeout(() => setCopied(null), 2000);
+  }
+
+  async function handleShare() {
+    const shareUrl = window.location.href;
+    if (navigator.share) {
+      await navigator.share({ title: article.title ?? undefined, url: shareUrl });
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      flash("share");
+    }
+  }
+
+  async function handleCopyMarkdown() {
+    const md = [
+      `# ${article.title ?? ""}`,
+      article.author ? `*${article.author}*` : "",
+      td.turndown(article.content),
+    ].filter(Boolean).join("\n\n");
+    await navigator.clipboard.writeText(md);
+    flash("md");
   }
 
   return (
@@ -161,6 +191,14 @@ export function Reader({ article }: Props) {
           )}
           <span className="r-domain truncate">{article.domain}</span>
         </div>
+
+        <button onClick={handleCopyMarkdown} className="r-icon-btn" aria-label="Copy as Markdown">
+          {copied === "md" ? <Check size={14} /> : <FileDown size={16} />}
+        </button>
+
+        <button onClick={handleShare} className="r-icon-btn" aria-label="Share">
+          {copied === "share" ? <Check size={14} /> : <Share2 size={16} />}
+        </button>
 
         <div ref={settingsRef} className="relative">
           <button
