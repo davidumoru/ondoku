@@ -3,7 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, Share2, FileDown, Check } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  ArrowLeft01Icon,
+  Share04Icon,
+  FileDownloadIcon,
+  Tick01Icon,
+} from "@hugeicons/core-free-icons";
 import TurndownService from "turndown";
 import type { DefuddleResponse } from "defuddle/node";
 
@@ -174,7 +180,7 @@ export function Reader({ article }: Props) {
           className="r-icon-btn"
           aria-label="Back"
         >
-          <ArrowLeft size={16} />
+          <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
         </button>
 
         <div className="flex items-center gap-2 flex-1 min-w-0 mx-3">
@@ -193,11 +199,11 @@ export function Reader({ article }: Props) {
         </div>
 
         <button onClick={handleCopyMarkdown} className="r-icon-btn" aria-label="Copy as Markdown">
-          {copied === "md" ? <Check size={14} /> : <FileDown size={16} />}
+          {copied === "md" ? <HugeiconsIcon icon={Tick01Icon} size={14} /> : <HugeiconsIcon icon={FileDownloadIcon} size={16} />}
         </button>
 
         <button onClick={handleShare} className="r-icon-btn" aria-label="Share">
-          {copied === "share" ? <Check size={14} /> : <Share2 size={16} />}
+          {copied === "share" ? <HugeiconsIcon icon={Tick01Icon} size={14} /> : <HugeiconsIcon icon={Share04Icon} size={16} />}
         </button>
 
         <div ref={settingsRef} className="relative">
