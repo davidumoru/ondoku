@@ -19,7 +19,7 @@ export default function Home() {
     <main className="min-h-dvh flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-lg space-y-10">
         <div className="space-y-2">
-          <h1 className="text-5xl font-semibold tracking-tight text-foreground">
+          <h1 className="text-5xl font-pixel text-foreground">
             ondoku
           </h1>
           <p className="text-muted-foreground text-lg">
