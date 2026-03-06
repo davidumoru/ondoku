@@ -93,9 +93,17 @@ export function Reader({ article }: Props) {
   const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
 
+  const t = themes[prefs.theme];
+
   useEffect(() => {
     localStorage.setItem("ondoku-prefs", JSON.stringify(prefs));
   }, [prefs]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.backgroundColor = t.bg;
+    return () => { root.style.backgroundColor = ""; };
+  }, [t.bg]);
 
   useEffect(() => {
     if (!showSettings) return;
@@ -107,8 +115,6 @@ export function Reader({ article }: Props) {
     document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [showSettings]);
-
-  const t = themes[prefs.theme];
   const readingTime = Math.ceil((article.wordCount ?? 0) / 200);
 
   function set<K extends keyof Prefs>(key: K, value: Prefs[K]) {
