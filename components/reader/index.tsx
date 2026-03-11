@@ -53,8 +53,11 @@ const themes = {
 } as const;
 
 const fonts = {
-  serif: { label: "Serif", value: "Georgia, 'Times New Roman', serif" },
-  sans: { label: "Sans", value: "system-ui, -apple-system, sans-serif" },
+  lora: { label: "Lora", value: "var(--font-lora), Georgia, serif" },
+  merriweather: { label: "Merriweather", value: "var(--font-merriweather), Georgia, serif" },
+  inter: { label: "Inter", value: "var(--font-inter), system-ui, sans-serif" },
+  sourceSans: { label: "Source Sans", value: "var(--font-source-sans), system-ui, sans-serif" },
+  geist: { label: "Geist", value: "var(--font-geist-sans), system-ui, sans-serif" },
 } as const;
 
 const sizes: { label: string; value: number }[] = [
@@ -73,7 +76,7 @@ interface Prefs {
   size: number;
 }
 
-const DEFAULT_PREFS: Prefs = { theme: "dawn", font: "serif", size: 17 };
+const DEFAULT_PREFS: Prefs = { theme: "dawn", font: "lora", size: 17 };
 
 interface Props {
   article: DefuddleResponse;
@@ -111,17 +114,19 @@ function chunkText(text: string, maxChars = 4000): string[] {
 
 export function Reader({ article }: Props) {
   const router = useRouter();
-  const [prefs, setPrefs] = useState<Prefs>(() => {
+  const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
+
+  useEffect(() => {
     try {
       const saved = localStorage.getItem("ondoku-prefs");
       if (saved) {
         const parsed = { ...DEFAULT_PREFS, ...JSON.parse(saved) };
         if (!(parsed.theme in themes)) parsed.theme = DEFAULT_PREFS.theme;
-        return parsed;
+        if (!(parsed.font in fonts)) parsed.font = DEFAULT_PREFS.font;
+        setPrefs(parsed);
       }
     } catch {}
-    return DEFAULT_PREFS;
-  });
+  }, []);
   const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
 
