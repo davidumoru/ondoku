@@ -93,11 +93,11 @@ async function fetchPage(url: string, ua: string): Promise<string> {
 }
 
 function resolveUrls(result: DefuddleResponse, base: string): DefuddleResponse {
-  const resolve = (u: string | null | undefined) => {
-    if (!u) return u;
+  const resolve = (u: string | null | undefined): string | undefined => {
+    if (!u) return undefined;
     try { return new URL(u, base).href; } catch { return u; }
   };
-  return { ...result, favicon: resolve(result.favicon), image: resolve(result.image) };
+  return { ...result, favicon: resolve(result.favicon) as string, image: resolve(result.image) as string };
 }
 
 export async function extractArticle(url: string): Promise<DefuddleResponse> {
