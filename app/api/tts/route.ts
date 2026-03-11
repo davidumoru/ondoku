@@ -29,9 +29,12 @@ export async function POST(req: Request) {
       ...(nextText && { nextText }),
     });
 
+    const reader = stream.getReader();
     const chunks: Uint8Array[] = [];
-    for await (const chunk of stream) {
-      chunks.push(chunk);
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) chunks.push(value);
     }
     const buffer = Buffer.concat(chunks);
 
