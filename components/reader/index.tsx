@@ -15,6 +15,10 @@ import {
 } from "@hugeicons/core-free-icons";
 import TurndownService from "turndown";
 import type { DefuddleResponse } from "defuddle/node";
+import {
+  Drawer,
+  DrawerContent,
+} from "@/components/ui/drawer";
 
 const themes = {
   dawn: {
@@ -112,6 +116,102 @@ function chunkText(text: string, maxChars = 4000): string[] {
   return chunks;
 }
 
+type ThemeColors = (typeof themes)[Theme];
+
+function SettingsContent({
+  t,
+  prefs,
+  set,
+}: {
+  t: ThemeColors;
+  prefs: Prefs;
+  set: <K extends keyof Prefs>(key: K, value: Prefs[K]) => void;
+}) {
+  return (
+    <>
+      <div className="r-settings-section">
+        <span className="r-settings-label" style={{ color: t.muted }}>
+          Theme
+        </span>
+        <div className="r-theme-swatches">
+          {(Object.keys(themes) as Theme[]).map((key) => (
+            <button
+              key={key}
+              onClick={() => set("theme", key)}
+              className="r-swatch"
+              style={{
+                background: themes[key].bg,
+                borderColor:
+                  prefs.theme === key ? themes[key].accent : themes[key].border,
+                boxShadow:
+                  prefs.theme === key
+                    ? `0 0 0 2px ${themes[key].accent}`
+                    : "none",
+              }}
+            >
+              <span className="r-swatch-preview" style={{ color: themes[key].fg }}>
+                Aa
+              </span>
+              <span className="r-swatch-name" style={{ color: themes[key].muted }}>
+                {themes[key].label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="r-settings-section">
+        <span className="r-settings-label" style={{ color: t.muted }}>
+          Font
+        </span>
+        <div className="r-font-grid">
+          {(Object.keys(fonts) as Font[]).map((key) => (
+            <button
+              key={key}
+              onClick={() => set("font", key)}
+              className="r-font-btn"
+              style={{
+                background: prefs.font === key ? t.fg : "transparent",
+                color: prefs.font === key ? t.bg : t.fg,
+                borderColor: prefs.font === key ? t.fg : t.border,
+              }}
+            >
+              <span className="r-font-sample" style={{ fontFamily: fonts[key].value }}>
+                Ag
+              </span>
+              <span className="r-font-name">{fonts[key].label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="r-settings-section">
+        <span className="r-settings-label" style={{ color: t.muted }}>
+          Size
+        </span>
+        <div className="r-size-row">
+          {sizes.map((s) => (
+            <button
+              key={s.value}
+              onClick={() => set("size", s.value)}
+              className="r-size-btn"
+              style={{
+                background: prefs.size === s.value ? t.fg : "transparent",
+                color: prefs.size === s.value ? t.bg : t.fg,
+                borderColor: prefs.size === s.value ? t.fg : t.border,
+              }}
+            >
+              <span className="r-size-letter" style={{ fontSize: `${s.value}px` }}>
+                A
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function Reader({ article }: Props) {
   const router = useRouter();
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
@@ -128,7 +228,16 @@ export function Reader({ article }: Props) {
     } catch {}
   }, []);
   const [showSettings, setShowSettings] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   const t = themes[prefs.theme];
 
@@ -145,7 +254,7 @@ export function Reader({ article }: Props) {
   }, [t.bg]);
 
   useEffect(() => {
-    if (!showSettings) return;
+    if (!showSettings || isMobile) return;
     function onPointerDown(e: PointerEvent) {
       if (!settingsRef.current?.contains(e.target as Node)) {
         setShowSettings(false);
@@ -153,7 +262,7 @@ export function Reader({ article }: Props) {
     }
     document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [showSettings]);
+  }, [showSettings, isMobile]);
   const readingTime = Math.ceil((article.wordCount ?? 0) / 200);
 
   const [copied, setCopied] = useState<"share" | "md" | null>(null);
@@ -425,86 +534,29 @@ export function Reader({ article }: Props) {
             Aa
           </button>
 
-          {showSettings && (
+          {!isMobile && showSettings && (
             <div
               className="r-settings"
               style={{ background: t.bg, borderColor: t.border, color: t.fg }}
             >
-              <div className="r-settings-section">
-                <span className="r-settings-label" style={{ color: t.muted }}>
-                  Theme
-                </span>
-                <div className="r-theme-swatches">
-                  {(Object.keys(themes) as Theme[]).map((key) => (
-                    <button
-                      key={key}
-                      onClick={() => set("theme", key)}
-                      className="r-swatch"
-                      title={themes[key].label}
-                      style={{
-                        background: themes[key].swatch,
-                        border: `1.5px solid ${
-                          prefs.theme === key ? t.accent : themes[key].border
-                        }`,
-                        outline:
-                          prefs.theme === key
-                            ? `2px solid ${t.accent}`
-                            : "2px solid transparent",
-                        outlineOffset: "2px",
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="r-settings-section">
-                <span className="r-settings-label" style={{ color: t.muted }}>
-                  Font
-                </span>
-                <div className="r-btn-group">
-                  {(Object.keys(fonts) as Font[]).map((key) => (
-                    <button
-                      key={key}
-                      onClick={() => set("font", key)}
-                      className="r-option-btn"
-                      style={{
-                        fontFamily: fonts[key].value,
-                        background: prefs.font === key ? t.fg : "transparent",
-                        color: prefs.font === key ? t.bg : t.fg,
-                        borderColor: t.border,
-                      }}
-                    >
-                      {fonts[key].label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="r-settings-section">
-                <span className="r-settings-label" style={{ color: t.muted }}>
-                  Size
-                </span>
-                <div className="r-btn-group">
-                  {sizes.map((s) => (
-                    <button
-                      key={s.value}
-                      onClick={() => set("size", s.value)}
-                      className="r-option-btn"
-                      style={{
-                        background:
-                          prefs.size === s.value ? t.fg : "transparent",
-                        color: prefs.size === s.value ? t.bg : t.fg,
-                        borderColor: t.border,
-                      }}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <SettingsContent t={t} prefs={prefs} set={set} />
             </div>
           )}
         </div>
+
+        <Drawer open={isMobile && showSettings} onOpenChange={setShowSettings}>
+          <DrawerContent
+            style={{
+              background: t.bg,
+              borderColor: t.border,
+              color: t.fg,
+            }}
+          >
+            <div className="r-settings-inner">
+              <SettingsContent t={t} prefs={prefs} set={set} />
+            </div>
+          </DrawerContent>
+        </Drawer>
       </header>
 
       <main>

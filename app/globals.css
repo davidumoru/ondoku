@@ -187,29 +187,38 @@
   position: absolute;
   right: 0;
   top: calc(100% + 8px);
-  width: 272px;
-  border-radius: 12px;
+  width: 288px;
+  border-radius: 14px;
   border: 1px solid;
-  padding: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.08);
+    0 16px 40px rgba(0, 0, 0, 0.14),
+    0 4px 12px rgba(0, 0, 0, 0.08);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.r-settings-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 4px 20px calc(20px + env(safe-area-inset-bottom));
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
 .r-settings-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .r-settings-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 
 .r-theme-swatches {
@@ -218,29 +227,93 @@
 }
 
 .r-swatch {
-  width: 48px;
-  height: 32px;
-  border-radius: 6px;
+  flex: 1;
+  height: 60px;
+  border-radius: 8px;
+  border: 1.5px solid;
   cursor: pointer;
-  transition: outline 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
 }
 
-.r-btn-group {
+.r-swatch-preview {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  font-family: Georgia, serif;
+}
+
+.r-swatch-name {
+  font-size: 10px;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.r-font-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.r-font-btn {
+  height: 64px;
+  border-radius: 8px;
+  border: 1px solid;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.r-font-sample {
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.r-font-name {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.r-size-row {
   display: flex;
   gap: 6px;
 }
 
-.r-option-btn {
+.r-size-btn {
   flex: 1;
-  height: 32px;
-  border-radius: 6px;
+  height: 52px;
+  border-radius: 8px;
   border: 1px solid;
-  font-size: 13px;
-  font-weight: 500;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition:
     background 0.15s,
-    color 0.15s;
+    color 0.15s,
+    border-color 0.15s;
+  font-family: Georgia, serif;
+  font-weight: 400;
+}
+
+.r-size-letter {
+  line-height: 1;
 }
 
 .r-article {
