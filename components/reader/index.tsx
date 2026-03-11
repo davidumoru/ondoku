@@ -50,17 +50,6 @@ const themes = {
     accentBorder: "#C4A882",
     swatch: "#F5EDD7",
   },
-  print: {
-    label: "Print",
-    bg: "#FFFFFF",
-    fg: "#111111",
-    muted: "#555555",
-    accent: "#000000",
-    border: "#E0E0E0",
-    codeBg: "#F5F5F5",
-    accentBorder: "#111111",
-    swatch: "#FFFFFF",
-  },
 } as const;
 
 const fonts = {
@@ -125,7 +114,11 @@ export function Reader({ article }: Props) {
   const [prefs, setPrefs] = useState<Prefs>(() => {
     try {
       const saved = localStorage.getItem("ondoku-prefs");
-      if (saved) return { ...DEFAULT_PREFS, ...JSON.parse(saved) };
+      if (saved) {
+        const parsed = { ...DEFAULT_PREFS, ...JSON.parse(saved) };
+        if (!(parsed.theme in themes)) parsed.theme = DEFAULT_PREFS.theme;
+        return parsed;
+      }
     } catch {}
     return DEFAULT_PREFS;
   });
