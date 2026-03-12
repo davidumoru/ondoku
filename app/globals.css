@@ -568,3 +568,10 @@
   opacity: 0.55;
   text-decoration: none;
 }
+
+.r-word-highlight {
+  background: color-mix(in srgb, var(--r-accent) 22%, transparent);
+  color: var(--r-fg);
+  border-radius: 2px;
+  transition: background 0.1s ease;
+}

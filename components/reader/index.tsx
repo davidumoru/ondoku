@@ -35,8 +35,11 @@ interface Props {
 export function Reader({ article }: Props) {
   const router = useRouter();
   const { prefs, set, t } = usePrefs();
-  const { ttsState, ttsError, play, pause, stop } = useTts(article.content);
-  const { showSettings, setShowSettings, isMobile, settingsRef } = useSettings();
+  const { ttsState, ttsError, activeWordIndex, play, pause, stop } = useTts(
+    article.content,
+  );
+  const { showSettings, setShowSettings, isMobile, settingsRef } =
+    useSettings();
   const [copied, setCopied] = useState<"share" | "md" | null>(null);
 
   function flash(type: "share" | "md") {
@@ -47,7 +50,10 @@ export function Reader({ article }: Props) {
   async function handleShare() {
     const shareUrl = window.location.href;
     if (navigator.share) {
-      await navigator.share({ title: article.title ?? undefined, url: shareUrl });
+      await navigator.share({
+        title: article.title ?? undefined,
+        url: shareUrl,
+      });
     } else {
       await navigator.clipboard.writeText(shareUrl);
       flash("share");
@@ -84,7 +90,11 @@ export function Reader({ article }: Props) {
       }
     >
       <header className="r-topbar">
-        <button onClick={() => router.back()} className="r-icon-btn" aria-label="Back">
+        <button
+          onClick={() => router.back()}
+          className="r-icon-btn"
+          aria-label="Back"
+        >
           <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
         </button>
 
@@ -114,7 +124,11 @@ export function Reader({ article }: Props) {
           onStop={stop}
         />
 
-        <button onClick={handleCopyMarkdown} className="r-icon-btn" aria-label="Copy as Markdown">
+        <button
+          onClick={handleCopyMarkdown}
+          className="r-icon-btn"
+          aria-label="Copy as Markdown"
+        >
           {copied === "md" ? (
             <HugeiconsIcon icon={Tick01Icon} size={14} />
           ) : (
@@ -150,7 +164,9 @@ export function Reader({ article }: Props) {
         </div>
 
         <Drawer open={isMobile && showSettings} onOpenChange={setShowSettings}>
-          <DrawerContent style={{ background: t.bg, borderColor: t.border, color: t.fg }}>
+          <DrawerContent
+            style={{ background: t.bg, borderColor: t.border, color: t.fg }}
+          >
             <div className="r-settings-inner">
               <SettingsContent t={t} prefs={prefs} set={set} />
             </div>
@@ -158,7 +174,11 @@ export function Reader({ article }: Props) {
         </Drawer>
       </header>
 
-      <ArticleContent article={article} mutedColor={t.muted} />
+      <ArticleContent
+        article={article}
+        mutedColor={t.muted}
+        activeWordIndex={activeWordIndex}
+      />
     </div>
   );
 }

@@ -15,13 +15,17 @@ export async function POST(req: Request) {
   }
 
   if (text.length > MAX_TEXT_LENGTH) {
-    return new Response(`Text exceeds ${MAX_TEXT_LENGTH} character limit`, { status: 400 });
+    return new Response(`Text exceeds ${MAX_TEXT_LENGTH} character limit`, {
+      status: 400,
+    });
   }
 
-  const client = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY });
+  const client = new ElevenLabsClient({
+    apiKey: process.env.ELEVENLABS_API_KEY,
+  });
 
   try {
-    const stream = await client.textToSpeech.convert(VOICE_ID, {
+    const result = await client.textToSpeech.convertWithTimestamps(VOICE_ID, {
       text,
       modelId: "eleven_turbo_v2_5",
       voiceSettings: { stability: 0.5, similarityBoost: 0.75 },
@@ -29,20 +33,15 @@ export async function POST(req: Request) {
       ...(nextText && { nextText }),
     });
 
-    const reader = stream.getReader();
-    const chunks: Uint8Array[] = [];
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (value) chunks.push(value);
-    }
-    const buffer = Buffer.concat(chunks);
-
-    return new Response(buffer, {
-      headers: { "Content-Type": "audio/mpeg" },
+    return Response.json({
+      audioBase64: result.audioBase64,
+      alignment: result.alignment ?? null,
     });
   } catch (e: unknown) {
-    const err = e as { statusCode?: number; body?: { detail?: { message?: string } } };
+    const err = e as {
+      statusCode?: number;
+      body?: { detail?: { message?: string } };
+    };
     const message = err.body?.detail?.message ?? String(e);
     const status = err.statusCode ?? 500;
     return new Response(message, { status });

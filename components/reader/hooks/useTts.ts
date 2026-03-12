@@ -4,6 +4,17 @@ import { useState, useEffect, useRef } from "react";
 
 export type TtsState = "idle" | "loading" | "playing" | "paused";
 
+interface WordTiming {
+  startTime: number;
+  endTime: number;
+}
+
+interface CharacterAlignment {
+  characters: string[];
+  characterStartTimesSeconds: number[];
+  characterEndTimesSeconds: number[];
+}
+
 function htmlToPlainText(html: string): string {
   const div = document.createElement("div");
   div.innerHTML = html;
@@ -26,15 +37,78 @@ function chunkText(text: string, maxChars = 4000): string[] {
   return chunks;
 }
 
+function countWords(text: string): number {
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+function extractWordTimings(alignment: CharacterAlignment): WordTiming[] {
+  const { characters, characterStartTimesSeconds, characterEndTimesSeconds } =
+    alignment;
+  const words: WordTiming[] = [];
+  let inWord = false;
+  let wordStart = 0;
+
+  for (let i = 0; i < characters.length; i++) {
+    const isWordChar = /\S/.test(characters[i]);
+    if (isWordChar && !inWord) {
+      inWord = true;
+      wordStart = characterStartTimesSeconds[i];
+    } else if (!isWordChar && inWord) {
+      inWord = false;
+      words.push({
+        startTime: wordStart,
+        endTime: characterEndTimesSeconds[i - 1],
+      });
+    }
+  }
+  if (inWord) {
+    words.push({
+      startTime: wordStart,
+      endTime: characterEndTimesSeconds[characterEndTimesSeconds.length - 1],
+    });
+  }
+  return words;
+}
+
+function findWordIndex(wordTimings: WordTiming[], currentTime: number): number {
+  let lo = 0;
+  let hi = wordTimings.length - 1;
+  let result = -1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (wordTimings[mid].startTime <= currentTime) {
+      result = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  return result;
+}
+
+function base64ToBlob(base64: string, mimeType: string): Blob {
+  const binary = atob(base64);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new Blob([bytes], { type: mimeType });
+}
+
 export function useTts(content: string) {
   const [ttsState, setTtsState] = useState<TtsState>("idle");
   const [ttsError, setTtsError] = useState<string | null>(null);
+  const [activeWordIndex, setActiveWordIndex] = useState(-1);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const chunksRef = useRef<string[]>([]);
   const chunkIndexRef = useRef(0);
+  const chunkWordOffsetsRef = useRef<number[]>([]);
   const objectUrlsRef = useRef<string[]>([]);
   const abortRef = useRef<AbortController | null>(null);
-  const prefetchRef = useRef<Promise<Blob> | null>(null);
+  const prefetchRef = useRef<Promise<{
+    blob: Blob;
+    wordTimings: WordTiming[];
+  }> | null>(null);
+  const wordTimingsRef = useRef<WordTiming[]>([]);
+  const lastWordIndexRef = useRef(-1);
 
   useEffect(() => {
     return () => {
@@ -54,13 +128,19 @@ export function useTts(content: string) {
     objectUrlsRef.current = [];
     chunkIndexRef.current = 0;
     chunksRef.current = [];
+    wordTimingsRef.current = [];
+    lastWordIndexRef.current = -1;
     setTtsState("idle");
     setTtsError(null);
+    setActiveWordIndex(-1);
   }
 
-  function fetchChunkBlob(index: number, signal: AbortSignal): Promise<Blob> {
+  async function fetchChunkData(
+    index: number,
+    signal: AbortSignal,
+  ): Promise<{ blob: Blob; wordTimings: WordTiming[] }> {
     const chunks = chunksRef.current;
-    return fetch("/api/tts", {
+    const res = await fetch("/api/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -69,31 +149,42 @@ export function useTts(content: string) {
         nextText: index < chunks.length - 1 ? chunks[index + 1] : undefined,
       }),
       signal,
-    }).then((res) => {
-      if (!res.ok)
-        return res.text().then((msg) => Promise.reject(new Error(msg)));
-      return res.blob();
     });
+
+    if (!res.ok) {
+      const msg = await res.text();
+      throw new Error(msg);
+    }
+
+    const { audioBase64, alignment } = await res.json();
+    const blob = base64ToBlob(audioBase64, "audio/mpeg");
+    const wordTimings = alignment ? extractWordTimings(alignment) : [];
+    return { blob, wordTimings };
   }
 
   async function playChunk(index: number, signal: AbortSignal) {
     if (index >= chunksRef.current.length || signal.aborted) {
-      if (!signal.aborted) setTtsState("idle");
+      if (!signal.aborted) {
+        setTtsState("idle");
+        setActiveWordIndex(-1);
+      }
       return;
     }
 
     setTtsState("loading");
 
     try {
-      const blobPromise = prefetchRef.current ?? fetchChunkBlob(index, signal);
+      const dataPromise = prefetchRef.current ?? fetchChunkData(index, signal);
       prefetchRef.current = null;
 
-      const blob = await blobPromise;
+      const { blob, wordTimings } = await dataPromise;
       if (signal.aborted) return;
+
+      wordTimingsRef.current = wordTimings;
 
       const nextIndex = index + 1;
       if (nextIndex < chunksRef.current.length) {
-        prefetchRef.current = fetchChunkBlob(nextIndex, signal);
+        prefetchRef.current = fetchChunkData(nextIndex, signal);
       }
 
       const url = URL.createObjectURL(blob);
@@ -101,6 +192,20 @@ export function useTts(content: string) {
 
       const audio = new Audio(url);
       audioRef.current = audio;
+
+      const chunkOffset = chunkWordOffsetsRef.current[index] ?? 0;
+
+      audio.ontimeupdate = () => {
+        const localIdx = findWordIndex(
+          wordTimingsRef.current,
+          audio.currentTime,
+        );
+        const globalIdx = localIdx >= 0 ? chunkOffset + localIdx : -1;
+        if (globalIdx !== lastWordIndexRef.current) {
+          lastWordIndexRef.current = globalIdx;
+          setActiveWordIndex(globalIdx);
+        }
+      };
 
       await new Promise<void>((resolve, reject) => {
         audio.onended = () => resolve();
@@ -121,6 +226,7 @@ export function useTts(content: string) {
       if ((e as Error).name !== "AbortError") {
         setTtsState("idle");
         setTtsError((e as Error).message || "Failed to generate audio");
+        setActiveWordIndex(-1);
       }
     }
   }
@@ -134,8 +240,18 @@ export function useTts(content: string) {
 
     stop();
     const text = htmlToPlainText(content);
-    chunksRef.current = chunkText(text);
+    const chunks = chunkText(text);
+    chunksRef.current = chunks;
     chunkIndexRef.current = 0;
+
+    // Pre-compute cumulative word offsets per chunk
+    const offsets: number[] = [];
+    let cumulative = 0;
+    for (const chunk of chunks) {
+      offsets.push(cumulative);
+      cumulative += countWords(chunk);
+    }
+    chunkWordOffsetsRef.current = offsets;
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -148,5 +264,5 @@ export function useTts(content: string) {
     setTtsState("paused");
   }
 
-  return { ttsState, ttsError, play, pause, stop };
+  return { ttsState, ttsError, activeWordIndex, play, pause, stop };
 }
