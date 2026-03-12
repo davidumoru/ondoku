@@ -34,6 +34,8 @@ function wrapWordsInPlace(container: HTMLElement): void {
     }
   }
 
+  if (container.querySelector("[data-w]")) return;
+
   Array.from(container.childNodes).forEach(walk);
 }
 

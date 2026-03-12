@@ -569,9 +569,9 @@
   text-decoration: none;
 }
 
-.r-word-highlight {
-  background: color-mix(in srgb, var(--r-accent) 22%, transparent);
-  color: var(--r-fg);
+.r-article-body .r-word-highlight {
+  color: var(--r-accent);
+  background: color-mix(in srgb, var(--r-accent) 15%, transparent);
   border-radius: 2px;
-  transition: background 0.1s ease;
+  transition: color 0.08s ease, background 0.08s ease;
 }
