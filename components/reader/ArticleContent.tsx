@@ -56,7 +56,13 @@ export function ArticleContent({
 
   // Wrap words in-place after mount — direct DOM mutation, no re-render needed
   useEffect(() => {
-    if (bodyRef.current) wrapWordsInPlace(bodyRef.current);
+    if (bodyRef.current) {
+      wrapWordsInPlace(bodyRef.current);
+      console.log(
+        "[ondoku] word spans:",
+        bodyRef.current.querySelectorAll("[data-w]").length,
+      );
+    }
   }, []);
 
   // Highlight active word via direct DOM manipulation — avoids re-rendering the article

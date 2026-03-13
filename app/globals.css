@@ -573,5 +573,44 @@
   color: var(--r-accent);
   background: color-mix(in srgb, var(--r-accent) 15%, transparent);
   border-radius: 2px;
-  transition: color 0.08s ease, background 0.08s ease;
+  transition:
+    color 0.08s ease,
+    background 0.08s ease;
+}
+
+.r-article-body .transcript {
+  margin-top: 2.5em;
+  padding-top: 2em;
+  border-top: 1px solid var(--r-border);
+}
+
+.r-article-body .transcript > h2 {
+  margin-top: 0;
+  font-size: 0.7em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--r-muted);
+}
+
+.r-article-body .timestamp {
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+  font-size: 0.78em;
+  font-weight: 500;
+  color: var(--r-accent);
+  letter-spacing: 0.02em;
+}
+
+.r-article-body .transcript-segment.speaker-0,
+.r-article-body .transcript-segment.speaker-1 {
+  padding-left: 0.875em;
+  border-left: 2px solid;
+}
+
+.r-article-body .transcript-segment.speaker-0 {
+  border-color: color-mix(in srgb, var(--r-accent) 60%, transparent);
+}
+
+.r-article-body .transcript-segment.speaker-1 {
+  border-color: color-mix(in srgb, var(--r-muted) 50%, transparent);
 }

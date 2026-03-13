@@ -157,8 +157,13 @@ export function useTts(content: string) {
     }
 
     const { audioBase64, alignment } = await res.json();
+    console.log(
+      "[ondoku] alignment chars:",
+      alignment?.characters?.length ?? "null",
+    );
     const blob = base64ToBlob(audioBase64, "audio/mpeg");
     const wordTimings = alignment ? extractWordTimings(alignment) : [];
+    console.log("[ondoku] word timings:", wordTimings.length);
     return { blob, wordTimings };
   }
 
@@ -195,7 +200,15 @@ export function useTts(content: string) {
 
       const chunkOffset = chunkWordOffsetsRef.current[index] ?? 0;
 
+      let loggedFirst = false;
       audio.ontimeupdate = () => {
+        if (!loggedFirst) {
+          console.log(
+            "[ondoku] ontimeupdate firing, timings:",
+            wordTimingsRef.current.length,
+          );
+          loggedFirst = true;
+        }
         const localIdx = findWordIndex(
           wordTimingsRef.current,
           audio.currentTime,
@@ -203,6 +216,7 @@ export function useTts(content: string) {
         const globalIdx = localIdx >= 0 ? chunkOffset + localIdx : -1;
         if (globalIdx !== lastWordIndexRef.current) {
           lastWordIndexRef.current = globalIdx;
+          console.log("[ondoku] activeWordIndex →", globalIdx);
           setActiveWordIndex(globalIdx);
         }
       };
