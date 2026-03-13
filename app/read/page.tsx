@@ -2,6 +2,8 @@ import { extractArticle } from "@/lib/extract";
 import { Reader } from "@/components/reader";
 import { redirect } from "next/navigation";
 
+export const maxDuration = 60;
+
 interface Props {
   searchParams: Promise<{ url?: string }>;
 }
