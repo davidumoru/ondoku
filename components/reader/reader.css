@@ -472,10 +472,9 @@
   letter-spacing: 0.02em;
 }
 
-.r-article-body .transcript-segment.speaker-0,
-.r-article-body .transcript-segment.speaker-1 {
+.r-article-body .transcript-segment[class*="speaker-"] {
   padding-left: 0.875em;
-  border-left: 2px solid;
+  border-left: 2px solid color-mix(in srgb, var(--r-muted) 35%, transparent);
 }
 
 .r-article-body .transcript-segment.speaker-0 {
@@ -483,5 +482,13 @@
 }
 
 .r-article-body .transcript-segment.speaker-1 {
-  border-color: color-mix(in srgb, var(--r-muted) 50%, transparent);
+  border-color: color-mix(in srgb, var(--r-muted) 60%, transparent);
+}
+
+.r-article-body .transcript-segment.speaker-2 {
+  border-color: color-mix(in srgb, var(--r-accent) 30%, transparent);
+}
+
+.r-article-body .transcript-segment.speaker-3 {
+  border-color: color-mix(in srgb, var(--r-muted) 30%, transparent);
 }
