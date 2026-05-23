@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ondoku
 
-## Getting Started
+![ondoku](./.github/ondoku.jpeg)
 
-First, run the development server:
+Read anything, beautifully — and listen to it.
+
+Paste any article URL and ondoku strips the page to its essence: title, body, author, hero image. From there you can tune type and theme to taste, or hit play to have it read aloud with word-by-word highlighting.
+
+The name is Japanese — *ondoku* (音読), "reading aloud."
+
+## Features
+
+- Clean article view, extraction powered by [defuddle](https://github.com/kepano/defuddle)
+- YouTube transcripts with speaker indicators
+- Text-to-speech via ElevenLabs, with word-level highlight sync
+- Three themes (Dawn, Dusk, Sepia), five fonts, four sizes — persisted across visits
+- Share, or copy the article as Markdown
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open <http://localhost:3000>.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Read-aloud requires an [ElevenLabs](https://elevenlabs.io) account. Create a `.env.local`:
 
-## Learn More
+```bash
+ELEVENLABS_API_KEY=your_key_here
+ELEVENLABS_VOICE_ID=JBFqnCBsd6RMkjVDRZzb   # optional, overrides the default voice
+```
 
-To learn more about Next.js, take a look at the following resources:
+Without a key the rest of the app still works — only the play button is inert.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+app/          routes and the TTS API
+components/   reader UI and hooks
+lib/          fetch + extract pipeline
+```
