@@ -27,6 +27,20 @@ export default function Home() {
 
   return (
     <main className="min-h-dvh flex flex-col items-center justify-center p-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            name: "ondoku",
+            description: "Read anything, beautifully.",
+            applicationCategory: "UtilitiesApplication",
+            operatingSystem: "Any",
+            offers: { "@type": "Offer", price: "0" },
+          }),
+        }}
+      />
       <div className="w-full max-w-lg space-y-10">
         <div className="space-y-2">
           <h1 className="text-5xl font-pixel text-foreground animate-in fade-in slide-in-from-bottom-2 duration-500 text-balance">
