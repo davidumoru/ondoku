@@ -19,10 +19,10 @@ export default function Home() {
     <main className="min-h-dvh flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-lg space-y-10">
         <div className="space-y-2">
-          <h1 className="text-5xl font-pixel text-foreground animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <h1 className="text-5xl font-pixel text-foreground animate-in fade-in slide-in-from-bottom-2 duration-500 text-balance">
             ondoku
           </h1>
-          <p className="text-muted-foreground text-lg animate-in fade-in slide-in-from-bottom-2 duration-500 delay-75 fill-mode-both">
+          <p className="text-muted-foreground text-lg animate-in fade-in slide-in-from-bottom-2 duration-500 delay-75 fill-mode-both text-balance">
             Read anything, beautifully.
           </p>
         </div>
@@ -41,7 +41,7 @@ export default function Home() {
           />
           <button
             type="submit"
-            className="h-11 px-5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 active:scale-[0.97] transition-[opacity,transform] duration-150 ease-out"
+            className="h-11 px-5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 active:scale-[0.96] transition-[opacity,transform] duration-150 ease-out"
           >
             Read
           </button>

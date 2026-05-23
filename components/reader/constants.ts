@@ -9,6 +9,7 @@ export const themes = {
     codeBg: "#F0EEE9",
     accentBorder: "#C8C5BC",
     swatch: "#FAFAF8",
+    imageOutline: "rgba(0, 0, 0, 0.1)",
   },
   dusk: {
     label: "Dusk",
@@ -20,6 +21,7 @@ export const themes = {
     codeBg: "#1C1B1A",
     accentBorder: "#4A4845",
     swatch: "#141413",
+    imageOutline: "rgba(255, 255, 255, 0.1)",
   },
   sepia: {
     label: "Sepia",
@@ -31,6 +33,7 @@ export const themes = {
     codeBg: "#EDE3C8",
     accentBorder: "#C4A882",
     swatch: "#F5EDD7",
+    imageOutline: "rgba(0, 0, 0, 0.1)",
   },
 } as const;
 

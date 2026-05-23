@@ -27,6 +27,38 @@ const td = new TurndownService({
   codeBlockStyle: "fenced",
 });
 
+const SWAP_EASE = "cubic-bezier(0.2, 0, 0, 1)";
+
+function swapStyle(visible: boolean): React.CSSProperties {
+  return {
+    opacity: visible ? 1 : 0,
+    transform: `scale(${visible ? 1 : 0.25})`,
+    filter: `blur(${visible ? 0 : 4}px)`,
+    transition: `opacity 200ms ${SWAP_EASE}, transform 200ms ${SWAP_EASE}, filter 200ms ${SWAP_EASE}`,
+  };
+}
+
+function IconSwap({
+  base,
+  confirm,
+  showConfirm,
+}: {
+  base: React.ReactNode;
+  confirm: React.ReactNode;
+  showConfirm: boolean;
+}) {
+  return (
+    <span className="relative inline-flex w-4 h-4 items-center justify-center">
+      <span className="absolute inset-0 inline-flex items-center justify-center" style={swapStyle(!showConfirm)}>
+        {base}
+      </span>
+      <span className="absolute inset-0 inline-flex items-center justify-center" style={swapStyle(showConfirm)}>
+        {confirm}
+      </span>
+    </span>
+  );
+}
+
 interface Props {
   article: DefuddleResponse;
 }
@@ -83,6 +115,7 @@ export function Reader({ article }: Props) {
           "--r-border": t.border,
           "--r-code-bg": t.codeBg,
           "--r-accent-border": t.accentBorder,
+          "--r-image-outline": t.imageOutline,
           "--r-size": `${prefs.size}px`,
           "--r-font": fonts[prefs.font].value,
         } as React.CSSProperties
@@ -128,19 +161,19 @@ export function Reader({ article }: Props) {
           className="r-icon-btn"
           aria-label="Copy as Markdown"
         >
-          {copied === "md" ? (
-            <HugeiconsIcon icon={Tick01Icon} size={14} />
-          ) : (
-            <HugeiconsIcon icon={FileDownloadIcon} size={16} />
-          )}
+          <IconSwap
+            base={<HugeiconsIcon icon={FileDownloadIcon} size={16} />}
+            confirm={<HugeiconsIcon icon={Tick01Icon} size={14} />}
+            showConfirm={copied === "md"}
+          />
         </button>
 
         <button onClick={handleShare} className="r-icon-btn" aria-label="Share">
-          {copied === "share" ? (
-            <HugeiconsIcon icon={Tick01Icon} size={14} />
-          ) : (
-            <HugeiconsIcon icon={Share04Icon} size={16} />
-          )}
+          <IconSwap
+            base={<HugeiconsIcon icon={Share04Icon} size={16} />}
+            confirm={<HugeiconsIcon icon={Tick01Icon} size={14} />}
+            showConfirm={copied === "share"}
+          />
         </button>
 
         <div ref={settingsRef} className="relative">

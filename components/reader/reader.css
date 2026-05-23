@@ -50,7 +50,7 @@
 }
 
 .r-icon-btn:active {
-  transform: scale(0.94);
+  transform: scale(0.96);
 }
 
 .r-icon-btn:focus-visible {
@@ -145,7 +145,7 @@
 }
 
 .r-swatch:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .r-swatch-preview {
@@ -185,7 +185,7 @@
 }
 
 .r-font-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .r-font-sample {
@@ -225,7 +225,7 @@
 }
 
 .r-size-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .r-size-letter {
@@ -248,6 +248,8 @@
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 2rem;
+  outline: 1px solid var(--r-image-outline);
+  outline-offset: -1px;
 }
 
 .r-title {
@@ -258,6 +260,7 @@
   letter-spacing: -0.02em;
   color: var(--r-fg);
   margin-bottom: 0.875rem;
+  text-wrap: balance;
 }
 
 .r-meta {
@@ -307,6 +310,7 @@
 
 .r-article-body p {
   margin: 0 0 1.3em;
+  text-wrap: pretty;
 }
 
 .r-article-body a {
@@ -382,6 +386,8 @@
   border-radius: 6px;
   margin: 2em auto;
   display: block;
+  outline: 1px solid var(--r-image-outline);
+  outline-offset: -1px;
 }
 
 .r-article-body figure {
@@ -517,6 +523,7 @@
   font-weight: 500;
   color: var(--r-accent);
   letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .r-article-body .transcript-segment[class*="speaker-"] {
