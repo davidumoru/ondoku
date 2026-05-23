@@ -19,15 +19,18 @@ export default function Home() {
     <main className="min-h-dvh flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-lg space-y-10">
         <div className="space-y-2">
-          <h1 className="text-5xl font-pixel text-foreground">
+          <h1 className="text-5xl font-pixel text-foreground animate-in fade-in slide-in-from-bottom-2 duration-500">
             ondoku
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-lg animate-in fade-in slide-in-from-bottom-2 duration-500 delay-75 fill-mode-both">
             Read anything, beautifully.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <form
+          onSubmit={handleSubmit}
+          className="flex gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both"
+        >
           <input
             type="text"
             value={url}
@@ -38,7 +41,7 @@ export default function Home() {
           />
           <button
             type="submit"
-            className="h-11 px-5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+            className="h-11 px-5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 active:scale-[0.97] transition-[opacity,transform] duration-150 ease-out"
           >
             Read
           </button>
