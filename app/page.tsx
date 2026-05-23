@@ -1,18 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [url, setUrl] = useState("");
+  const [pending, startTransition] = useTransition();
+  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      inputRef.current?.focus();
+    }
+  }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     let target = url.trim();
     if (!target) return;
     if (!target.match(/^https?:\/\//)) target = "https://" + target;
-    router.push(`/read?url=${encodeURIComponent(target)}`);
+    startTransition(() => {
+      router.push(`/read?url=${encodeURIComponent(target)}`);
+    });
   }
 
   return (
@@ -32,18 +42,24 @@ export default function Home() {
           className="flex gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both"
         >
           <input
-            type="text"
+            ref={inputRef}
+            type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Paste a URL…"
-            autoFocus
-            className="flex-1 h-11 rounded-lg border border-border bg-card px-4 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring/50 transition-shadow"
+            required
+            spellCheck={false}
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
+            className="flex-1 h-11 rounded-lg border border-border bg-card px-4 text-base text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring/50 transition-shadow"
           />
           <button
             type="submit"
-            className="h-11 px-5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 active:scale-[0.96] transition-[opacity,transform] duration-150 ease-out"
+            disabled={pending}
+            className="h-11 px-5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 active:scale-[0.96] disabled:opacity-60 disabled:cursor-not-allowed transition-[opacity,transform] duration-150 ease-out"
           >
-            Read
+            {pending ? "Loading…" : "Read"}
           </button>
         </form>
       </div>
