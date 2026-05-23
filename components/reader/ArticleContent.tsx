@@ -4,7 +4,12 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import type { DefuddleResponse } from "defuddle/node";
 
-function wrapWordsInPlace(container: HTMLElement): void {
+const WORD_ATTR = "data-w";
+const HIGHLIGHT_CLASS = "r-word-highlight";
+
+function wrapWords(container: HTMLElement): void {
+  if (container.querySelector(`[${WORD_ATTR}]`)) return;
+
   let wordIndex = 0;
 
   function walk(node: Node) {
@@ -14,69 +19,63 @@ function wrapWordsInPlace(container: HTMLElement): void {
 
       const tokens = text.split(/(\s+)/);
       const fragment = document.createDocumentFragment();
-
       for (const token of tokens) {
         if (/\S/.test(token)) {
           const span = document.createElement("span");
-          span.setAttribute("data-w", String(wordIndex++));
+          span.setAttribute(WORD_ATTR, String(wordIndex++));
           span.textContent = token;
           fragment.appendChild(span);
         } else {
           fragment.appendChild(document.createTextNode(token));
         }
       }
-
       node.parentNode?.replaceChild(fragment, node);
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      const tag = (node as Element).tagName.toLowerCase();
-      if (tag === "script" || tag === "style") return;
+      return;
+    }
+
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const tag = (node as Element).tagName;
+      if (tag === "SCRIPT" || tag === "STYLE") return;
       Array.from(node.childNodes).forEach(walk);
     }
   }
 
-  if (container.querySelector("[data-w]")) return;
-
   Array.from(container.childNodes).forEach(walk);
 }
 
-interface ArticleContentProps {
+function isOffScreen(el: Element): boolean {
+  const rect = el.getBoundingClientRect();
+  const margin = 80;
+  return rect.top < margin || rect.bottom > window.innerHeight - margin;
+}
+
+interface Props {
   article: DefuddleResponse;
   mutedColor: string;
   activeWordIndex: number;
 }
 
-export function ArticleContent({
-  article,
-  mutedColor,
-  activeWordIndex,
-}: ArticleContentProps) {
-  const readingTime = Math.ceil((article.wordCount ?? 0) / 200);
+export function ArticleContent({ article, mutedColor, activeWordIndex }: Props) {
+  const readingTime = Math.max(1, Math.ceil((article.wordCount ?? 0) / 200));
   const bodyRef = useRef<HTMLDivElement>(null);
   const prevHighlightRef = useRef<Element | null>(null);
 
-  // Wrap words in-place after mount — direct DOM mutation, no re-render needed
   useEffect(() => {
-    if (bodyRef.current) {
-      wrapWordsInPlace(bodyRef.current);
-      console.log(
-        "[ondoku] word spans:",
-        bodyRef.current.querySelectorAll("[data-w]").length,
-      );
-    }
+    if (bodyRef.current) wrapWords(bodyRef.current);
   }, []);
 
-  // Highlight active word via direct DOM manipulation — avoids re-rendering the article
   useEffect(() => {
     if (prevHighlightRef.current) {
-      prevHighlightRef.current.classList.remove("r-word-highlight");
+      prevHighlightRef.current.classList.remove(HIGHLIGHT_CLASS);
       prevHighlightRef.current = null;
     }
     if (activeWordIndex < 0 || !bodyRef.current) return;
-    const el = bodyRef.current.querySelector(`[data-w="${activeWordIndex}"]`);
-    if (el) {
-      el.classList.add("r-word-highlight");
-      prevHighlightRef.current = el;
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const el = bodyRef.current.querySelector(`[${WORD_ATTR}="${activeWordIndex}"]`);
+    if (!el) return;
+    el.classList.add(HIGHLIGHT_CLASS);
+    prevHighlightRef.current = el;
+    if (isOffScreen(el)) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [activeWordIndex]);
 
@@ -98,9 +97,7 @@ export function ArticleContent({
           <h1 className="r-title">{article.title}</h1>
           <div className="r-meta" style={{ color: mutedColor }}>
             {article.author && <span>{article.author}</span>}
-            {article.author && article.published && (
-              <span className="r-meta-sep">·</span>
-            )}
+            {article.author && article.published && <span className="r-meta-sep">·</span>}
             {article.published && (
               <span>
                 {new Date(article.published).toLocaleDateString("en-US", {
@@ -110,9 +107,7 @@ export function ArticleContent({
                 })}
               </span>
             )}
-            {(article.author || article.published) && (
-              <span className="r-meta-sep">·</span>
-            )}
+            {(article.author || article.published) && <span className="r-meta-sep">·</span>}
             <span>{readingTime} min read</span>
           </div>
         </div>

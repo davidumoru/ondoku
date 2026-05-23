@@ -12,7 +12,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import TurndownService from "turndown";
 import type { DefuddleResponse } from "defuddle/node";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 
 import { fonts } from "./constants";
 import { usePrefs } from "./hooks/usePrefs";
@@ -29,7 +29,6 @@ const td = new TurndownService({
 
 interface Props {
   article: DefuddleResponse;
-  url: string;
 }
 
 export function Reader({ article }: Props) {
@@ -167,6 +166,10 @@ export function Reader({ article }: Props) {
           <DrawerContent
             style={{ background: t.bg, borderColor: t.border, color: t.fg }}
           >
+            <DrawerTitle className="sr-only">Reading settings</DrawerTitle>
+            <DrawerDescription className="sr-only">
+              Adjust theme, font, and text size.
+            </DrawerDescription>
             <div className="r-settings-inner">
               <SettingsContent t={t} prefs={prefs} set={set} />
             </div>
