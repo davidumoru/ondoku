@@ -12,6 +12,7 @@
     "@elevenlabs/elevenlabs-js": "^2.38.1",
     "@hugeicons/core-free-icons": "^4.0.0",
     "@hugeicons/react": "^1.1.5",
+    "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "defuddle": "^0.13.0",
     "geist": "^1.7.0",
