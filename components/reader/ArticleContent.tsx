@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import type { DefuddleResponse } from "defuddle/node";
 
-const WORD_ATTR = "data-w";
+const WORD_ATTR = "data-ondoku-word";
 const HIGHLIGHT_CLASS = "r-word-highlight";
 
 function wrapWords(container: HTMLElement): void {

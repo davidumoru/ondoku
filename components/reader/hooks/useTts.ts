@@ -43,8 +43,43 @@ export function useTts(content: string) {
   const prefetchRef = useRef<Promise<ChunkData> | null>(null);
   const wordTimingsRef = useRef<WordTiming[]>([]);
   const lastWordIndexRef = useRef(-1);
+  const chunkOffsetRef = useRef(0);
+  const progressFrameRef = useRef<number | null>(null);
+
+  const stopProgress = useCallback(() => {
+    if (progressFrameRef.current !== null) {
+      cancelAnimationFrame(progressFrameRef.current);
+      progressFrameRef.current = null;
+    }
+  }, []);
+
+  const updateProgress = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const localIdx = findWordIndex(wordTimingsRef.current, audio.currentTime);
+    const globalIdx = localIdx >= 0 ? chunkOffsetRef.current + localIdx : -1;
+    if (globalIdx !== lastWordIndexRef.current) {
+      lastWordIndexRef.current = globalIdx;
+      setActiveWordIndex(globalIdx);
+    }
+  }, []);
+
+  const startProgress = useCallback(() => {
+    stopProgress();
+    const tick = () => {
+      updateProgress();
+      const audio = audioRef.current;
+      if (audio && !audio.paused && !audio.ended) {
+        progressFrameRef.current = requestAnimationFrame(tick);
+      } else {
+        progressFrameRef.current = null;
+      }
+    };
+    tick();
+  }, [stopProgress, updateProgress]);
 
   const stop = useCallback(() => {
+    stopProgress();
     abortRef.current?.abort();
     abortRef.current = null;
     audioRef.current?.pause();
@@ -55,11 +90,12 @@ export function useTts(content: string) {
     chunksRef.current = [];
     offsetsRef.current = [];
     wordTimingsRef.current = [];
+    chunkOffsetRef.current = 0;
     lastWordIndexRef.current = -1;
     setTtsState("idle");
     setTtsError(null);
     setActiveWordIndex(-1);
-  }, []);
+  }, [stopProgress]);
 
   useEffect(() => stop, [stop]);
 
@@ -93,6 +129,7 @@ export function useTts(content: string) {
   const play = useCallback(async () => {
     if (ttsState === "paused" && audioRef.current) {
       await audioRef.current.play();
+      startProgress();
       setTtsState("playing");
       return;
     }
@@ -130,26 +167,33 @@ export function useTts(content: string) {
 
         const audio = new Audio(url);
         audioRef.current = audio;
-        const chunkOffset = offsetsRef.current[i] ?? 0;
-
-        audio.ontimeupdate = () => {
-          const localIdx = findWordIndex(wordTimingsRef.current, audio.currentTime);
-          const globalIdx = localIdx >= 0 ? chunkOffset + localIdx : -1;
-          if (globalIdx !== lastWordIndexRef.current) {
-            lastWordIndexRef.current = globalIdx;
-            setActiveWordIndex(globalIdx);
-          }
-        };
+        chunkOffsetRef.current = offsetsRef.current[i] ?? 0;
 
         await new Promise<void>((resolve, reject) => {
-          audio.onended = () => resolve();
+          audio.onended = () => {
+            updateProgress();
+            stopProgress();
+            resolve();
+          };
           audio.onerror = () => reject(new Error("Audio playback error"));
           audio.oncanplay = () => {
-            if (!signal.aborted) setTtsState("playing");
+            if (!signal.aborted) {
+              setTtsState("playing");
+              startProgress();
+            }
           };
-          audio.play().catch(reject);
+          audio
+            .play()
+            .then(() => {
+              if (!signal.aborted) {
+                setTtsState("playing");
+                startProgress();
+              }
+            })
+            .catch(reject);
           signal.addEventListener("abort", () => {
             audio.pause();
+            stopProgress();
             reject(new DOMException("Aborted", "AbortError"));
           });
         });
@@ -165,12 +209,13 @@ export function useTts(content: string) {
 
     setTtsState("idle");
     setActiveWordIndex(-1);
-  }, [content, fetchChunk, stop, ttsState]);
+  }, [content, fetchChunk, startProgress, stop, stopProgress, ttsState, updateProgress]);
 
   const pause = useCallback(() => {
     audioRef.current?.pause();
+    stopProgress();
     setTtsState("paused");
-  }, []);
+  }, [stopProgress]);
 
   return { ttsState, ttsError, activeWordIndex, play, pause, stop };
 }
