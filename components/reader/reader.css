@@ -571,11 +571,17 @@
 
 .r-article-body .r-word-highlight {
   color: var(--r-accent);
-  background: color-mix(in srgb, var(--r-accent) 15%, transparent);
-  border-radius: 2px;
+  background: color-mix(in srgb, var(--r-accent) 18%, transparent);
+  border-radius: 0.08em;
+  box-shadow:
+    0 0 0 0.04em color-mix(in srgb, var(--r-accent) 18%, transparent),
+    0 0.08em 0.24em color-mix(in srgb, var(--r-accent) 12%, transparent);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
   transition:
     color 0.08s ease,
-    background 0.08s ease;
+    background 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .r-article-body .transcript {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import Image from "next/image";
 import type { DefuddleResponse } from "defuddle/node";
 
@@ -66,9 +66,9 @@ export function ArticleContent({
   const bodyRef = useRef<HTMLDivElement>(null);
   const prevHighlightRef = useRef<Element | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (highlightEnabled && bodyRef.current) wrapWords(bodyRef.current);
-  }, [highlightEnabled]);
+  });
 
   useEffect(() => {
     if (prevHighlightRef.current) {
