@@ -90,6 +90,33 @@ export function SettingsContent({ t, prefs, set }: SettingsContentProps) {
           ))}
         </div>
       </div>
+
+      <div className="r-settings-section">
+        <button
+          type="button"
+          role="switch"
+          aria-checked={prefs.highlight}
+          onClick={() => set("highlight", !prefs.highlight)}
+          className="r-toggle-row"
+          style={{ color: t.fg }}
+        >
+          <span>
+            <span className="r-toggle-title">Highlight words</span>
+            <span className="r-toggle-copy" style={{ color: t.muted }}>
+              Follow read-aloud playback
+            </span>
+          </span>
+          <span
+            className="r-toggle"
+            data-state={prefs.highlight ? "on" : "off"}
+            style={{
+              background: prefs.highlight ? t.accent : t.border,
+            }}
+          >
+            <span className="r-toggle-thumb" />
+          </span>
+        </button>
+      </div>
     </>
   );
 }

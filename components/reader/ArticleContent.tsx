@@ -53,23 +53,29 @@ interface Props {
   article: DefuddleResponse;
   mutedColor: string;
   activeWordIndex: number;
+  highlightEnabled: boolean;
 }
 
-export function ArticleContent({ article, mutedColor, activeWordIndex }: Props) {
+export function ArticleContent({
+  article,
+  mutedColor,
+  activeWordIndex,
+  highlightEnabled,
+}: Props) {
   const readingTime = Math.max(1, Math.ceil((article.wordCount ?? 0) / 200));
   const bodyRef = useRef<HTMLDivElement>(null);
   const prevHighlightRef = useRef<Element | null>(null);
 
   useEffect(() => {
-    if (bodyRef.current) wrapWords(bodyRef.current);
-  }, []);
+    if (highlightEnabled && bodyRef.current) wrapWords(bodyRef.current);
+  }, [highlightEnabled]);
 
   useEffect(() => {
     if (prevHighlightRef.current) {
       prevHighlightRef.current.classList.remove(HIGHLIGHT_CLASS);
       prevHighlightRef.current = null;
     }
-    if (activeWordIndex < 0 || !bodyRef.current) return;
+    if (!highlightEnabled || activeWordIndex < 0 || !bodyRef.current) return;
     const el = bodyRef.current.querySelector(`[${WORD_ATTR}="${activeWordIndex}"]`);
     if (!el) return;
     el.classList.add(HIGHLIGHT_CLASS);
@@ -77,7 +83,7 @@ export function ArticleContent({ article, mutedColor, activeWordIndex }: Props) 
     if (isOffScreen(el)) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  }, [activeWordIndex]);
+  }, [activeWordIndex, highlightEnabled]);
 
   return (
     <main>

@@ -5,8 +5,10 @@ export interface WordTiming {
 
 export interface CharacterAlignment {
   characters: string[];
-  characterStartTimesSeconds: number[];
-  characterEndTimesSeconds: number[];
+  characterStartTimesSeconds?: number[];
+  characterEndTimesSeconds?: number[];
+  character_start_times_seconds?: number[];
+  character_end_times_seconds?: number[];
 }
 
 export function htmlToPlainText(html: string): string {
@@ -46,7 +48,14 @@ export function chunkWordOffsets(chunks: string[]): number[] {
 }
 
 export function extractWordTimings(alignment: CharacterAlignment): WordTiming[] {
-  const { characters, characterStartTimesSeconds, characterEndTimesSeconds } = alignment;
+  const { characters } = alignment;
+  const characterStartTimesSeconds =
+    alignment.characterStartTimesSeconds ?? alignment.character_start_times_seconds;
+  const characterEndTimesSeconds =
+    alignment.characterEndTimesSeconds ?? alignment.character_end_times_seconds;
+
+  if (!characterStartTimesSeconds || !characterEndTimesSeconds) return [];
+
   const words: WordTiming[] = [];
   let inWord = false;
   let wordStart = 0;

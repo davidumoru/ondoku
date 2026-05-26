@@ -214,6 +214,7 @@ export function Reader({ article }: Props) {
         article={article}
         mutedColor={t.muted}
         activeWordIndex={activeWordIndex}
+        highlightEnabled={prefs.highlight}
       />
     </div>
   );

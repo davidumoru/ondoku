@@ -17,6 +17,7 @@ function parsePrefs(raw: string | null): Prefs {
       const parsed = { ...DEFAULT_PREFS, ...JSON.parse(raw) };
       if (!(parsed.theme in themes)) parsed.theme = DEFAULT_PREFS.theme;
       if (!(parsed.font in fonts)) parsed.font = DEFAULT_PREFS.font;
+      if (typeof parsed.highlight !== "boolean") parsed.highlight = DEFAULT_PREFS.highlight;
       value = parsed;
     } catch {
       value = DEFAULT_PREFS;

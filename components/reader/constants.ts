@@ -60,6 +60,7 @@ export interface Prefs {
   theme: Theme;
   font: Font;
   size: number;
+  highlight: boolean;
 }
 
-export const DEFAULT_PREFS: Prefs = { theme: "dawn", font: "lora", size: 17 };
+export const DEFAULT_PREFS: Prefs = { theme: "dawn", font: "lora", size: 17, highlight: true };

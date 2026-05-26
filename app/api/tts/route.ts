@@ -76,7 +76,7 @@ export async function POST(req: Request) {
 
     return Response.json({
       audioBase64: result.audioBase64,
-      alignment: result.alignment ?? null,
+      alignment: result.alignment ?? result.normalizedAlignment ?? null,
     });
   } catch (e: unknown) {
     const err = e as { statusCode?: number; body?: { detail?: { message?: string } } };
