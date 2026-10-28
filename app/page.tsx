@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { RecentHistory } from "@/components/RecentHistory";
+import { readPath } from "@/lib/site";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -21,7 +23,7 @@ export default function Home() {
     if (!target) return;
     if (!target.match(/^https?:\/\//)) target = "https://" + target;
     startTransition(() => {
-      router.push(`/read?url=${encodeURIComponent(target)}`);
+      router.push(readPath(target));
     });
   }
 
@@ -76,6 +78,8 @@ export default function Home() {
             {pending ? "Loading…" : "Read"}
           </button>
         </form>
+
+        <RecentHistory />
       </div>
     </main>
   );

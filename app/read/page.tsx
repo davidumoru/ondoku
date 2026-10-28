@@ -19,5 +19,5 @@ export default async function ReadPage({ searchParams }: Props) {
 
   const article = await extractArticle(url);
 
-  return <Reader article={article} />;
+  return <Reader article={article} sourceUrl={url} />;
 }

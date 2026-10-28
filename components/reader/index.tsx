@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -12,7 +12,13 @@ import {
 } from "@hugeicons/core-free-icons";
 import TurndownService from "turndown";
 import type { DefuddleResponse } from "defuddle/node";
-import { Drawer, DrawerContent, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
+import { saveHistoryItem } from "@/lib/history";
 
 import { fonts } from "./constants";
 import { usePrefs } from "./hooks/usePrefs";
@@ -30,9 +36,10 @@ const td = new TurndownService({
 
 interface Props {
   article: DefuddleResponse;
+  sourceUrl: string;
 }
 
-export function Reader({ article }: Props) {
+export function Reader({ article, sourceUrl }: Props) {
   const router = useRouter();
   const { prefs, set, t } = usePrefs();
   const { ttsState, ttsError, activeWordIndex, play, pause, stop } = useTts(
@@ -41,6 +48,19 @@ export function Reader({ article }: Props) {
   const { showSettings, setShowSettings, isMobile, settingsRef } =
     useSettings();
   const [copied, setCopied] = useState<"share" | "md" | null>(null);
+
+  useEffect(() => {
+    saveHistoryItem({
+      url: sourceUrl,
+      title: article.title ?? sourceUrl,
+      domain: article.domain,
+      favicon: article.favicon,
+      image: article.image,
+      author: article.author,
+      wordCount: article.wordCount,
+      readAt: Date.now(),
+    });
+  }, [article, sourceUrl]);
 
   function flash(type: "share" | "md") {
     setCopied(type);
