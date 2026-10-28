@@ -17,7 +17,7 @@ export default async function ReadPage({ searchParams }: Props) {
   const { url } = await searchParams;
   if (!url) redirect("/");
 
-  const article = await extractArticle(decodeURIComponent(url));
+  const article = await extractArticle(url);
 
   return <Reader article={article} />;
 }
