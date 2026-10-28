@@ -3,9 +3,8 @@ const FETCH_TIMEOUT_MS = 10_000;
 const MAX_REDIRECTS = 5;
 
 const DEFAULT_UA = "Mozilla/5.0 (compatible; Ondoku/1.0; +https://ondoku.app)";
-const BOT_UA = `${DEFAULT_UA} bot`;
+export const BOT_UA = `${DEFAULT_UA} bot`;
 
-// Domains that serve better content to bot user agents (SSR vs client-rendered).
 const BOT_UA_DOMAINS = new Set(["github.com"]);
 
 const PRIVATE_IP_RE =
@@ -42,8 +41,6 @@ export function pickUserAgent(url: URL): string {
   }
   return DEFAULT_UA;
 }
-
-export { BOT_UA, DEFAULT_UA };
 
 export async function fetchHtml(url: URL, userAgent: string): Promise<string> {
   const controller = new AbortController();
@@ -147,8 +144,6 @@ function detectCharset(contentType: string, buffer: ArrayBuffer): string {
   );
   if (metaHttpEquiv) return metaHttpEquiv[1].toLowerCase();
 
-  // Heuristic byte scan: bytes in 0x80–0x9F that aren't valid UTF-8 leads
-  // suggest windows-1252; valid multi-byte UTF-8 sequences suggest utf-8.
   const bytes = new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 8192));
   for (let i = 0; i < bytes.length; i++) {
     const b = bytes[i];

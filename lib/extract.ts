@@ -3,8 +3,8 @@ import type { DefuddleResponse } from "defuddle/node";
 import { assertSafeUrl, BOT_UA, fetchHtml, pickUserAgent } from "./fetch";
 
 function resolveUrls(result: DefuddleResponse, base: string): DefuddleResponse {
-  const resolve = (u: string | null | undefined): string | undefined => {
-    if (!u) return undefined;
+  const resolve = (u: string): string => {
+    if (!u) return u;
     try {
       return new URL(u, base).href;
     } catch {
@@ -13,14 +13,16 @@ function resolveUrls(result: DefuddleResponse, base: string): DefuddleResponse {
   };
   return {
     ...result,
-    favicon: resolve(result.favicon) as string,
-    image: resolve(result.image) as string,
+    favicon: resolve(result.favicon),
+    image: resolve(result.image),
   };
 }
 
 function isYouTube(url: URL): boolean {
   const host = url.hostname.toLowerCase();
-  return host === "youtube.com" || host === "www.youtube.com" || host === "youtu.be";
+  return (
+    host === "youtube.com" || host === "www.youtube.com" || host === "youtu.be"
+  );
 }
 
 export async function extractArticle(input: string): Promise<DefuddleResponse> {
