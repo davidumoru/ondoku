@@ -1,5 +1,6 @@
 const MAX_SIZE = 5 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 10_000;
+const MAX_REDIRECTS = 5;
 
 const DEFAULT_UA = "Mozilla/5.0 (compatible; Ondoku/1.0; +https://ondoku.app)";
 const BOT_UA = `${DEFAULT_UA} bot`;
@@ -9,6 +10,7 @@ const BOT_UA_DOMAINS = new Set(["github.com"]);
 
 const PRIVATE_IP_RE =
   /^(?:10\.|127\.|192\.168\.|169\.254\.|0\.|172\.(?:1[6-9]|2\d|3[0-1])\.)/;
+const PRIVATE_IPV6_RE = /^\[(?:::1?\]|f[cd]|fe[89ab]|::ffff:)/;
 const PRIVATE_HOSTS = new Set(["localhost", "ip6-localhost", "ip6-loopback"]);
 
 export function assertSafeUrl(input: string): URL {
@@ -25,6 +27,7 @@ export function assertSafeUrl(input: string): URL {
   if (
     PRIVATE_HOSTS.has(host) ||
     PRIVATE_IP_RE.test(host) ||
+    PRIVATE_IPV6_RE.test(host) ||
     host.endsWith(".local")
   ) {
     throw new Error("Private hosts are not allowed");
@@ -47,15 +50,11 @@ export async function fetchHtml(url: URL, userAgent: string): Promise<string> {
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": userAgent,
-        Accept: "text/html,application/xhtml+xml",
-      },
-      redirect: "follow",
-      cache: "no-store",
-      signal: controller.signal,
-    });
+    const response = await fetchFollowingSafeRedirects(
+      url,
+      userAgent,
+      controller.signal,
+    );
 
     if (!response.ok) {
       throw new Error(
@@ -99,6 +98,31 @@ export async function fetchHtml(url: URL, userAgent: string): Promise<string> {
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function fetchFollowingSafeRedirects(
+  url: URL,
+  userAgent: string,
+  signal: AbortSignal,
+): Promise<Response> {
+  let current = url;
+  for (let i = 0; i <= MAX_REDIRECTS; i++) {
+    const response = await fetch(current, {
+      headers: {
+        "User-Agent": userAgent,
+        Accept: "text/html,application/xhtml+xml",
+      },
+      redirect: "manual",
+      cache: "no-store",
+      signal,
+    });
+    const location = response.headers.get("location");
+    if (response.status < 300 || response.status >= 400 || !location) {
+      return response;
+    }
+    current = assertSafeUrl(new URL(location, current).href);
+  }
+  throw new Error("Too many redirects");
 }
 
 function decodeHtml(buffer: ArrayBuffer, contentType: string): string {
