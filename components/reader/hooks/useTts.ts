@@ -159,7 +159,9 @@ export function useTts(content: string) {
         wordTimingsRef.current = wordTimings;
 
         if (i + 1 < chunks.length) {
-          prefetchRef.current = fetchChunk(i + 1, signal);
+          const next = fetchChunk(i + 1, signal);
+          next.catch(() => {});
+          prefetchRef.current = next;
         }
 
         const url = URL.createObjectURL(blob);
@@ -176,12 +178,6 @@ export function useTts(content: string) {
             resolve();
           };
           audio.onerror = () => reject(new Error("Audio playback error"));
-          audio.oncanplay = () => {
-            if (!signal.aborted) {
-              setTtsState("playing");
-              startProgress();
-            }
-          };
           audio
             .play()
             .then(() => {
@@ -191,11 +187,15 @@ export function useTts(content: string) {
               }
             })
             .catch(reject);
-          signal.addEventListener("abort", () => {
-            audio.pause();
-            stopProgress();
-            reject(new DOMException("Aborted", "AbortError"));
-          });
+          signal.addEventListener(
+            "abort",
+            () => {
+              audio.pause();
+              stopProgress();
+              reject(new DOMException("Aborted", "AbortError"));
+            },
+            { once: true },
+          );
         });
       } catch (e) {
         if ((e as Error).name !== "AbortError") {
@@ -209,7 +209,15 @@ export function useTts(content: string) {
 
     setTtsState("idle");
     setActiveWordIndex(-1);
-  }, [content, fetchChunk, startProgress, stop, stopProgress, ttsState, updateProgress]);
+  }, [
+    content,
+    fetchChunk,
+    startProgress,
+    stop,
+    stopProgress,
+    ttsState,
+    updateProgress,
+  ]);
 
   const pause = useCallback(() => {
     audioRef.current?.pause();
