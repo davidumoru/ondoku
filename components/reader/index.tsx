@@ -20,44 +20,13 @@ import { useTts } from "./hooks/useTts";
 import { useSettings } from "./hooks/useSettings";
 import { SettingsContent } from "./SettingsContent";
 import { TtsControls } from "./TtsControls";
+import { IconSwap } from "./IconSwap";
 import { ArticleContent } from "./ArticleContent";
 
 const td = new TurndownService({
   headingStyle: "atx",
   codeBlockStyle: "fenced",
 });
-
-const SWAP_EASE = "cubic-bezier(0.2, 0, 0, 1)";
-
-function swapStyle(visible: boolean): React.CSSProperties {
-  return {
-    opacity: visible ? 1 : 0,
-    transform: `scale(${visible ? 1 : 0.25})`,
-    filter: `blur(${visible ? 0 : 4}px)`,
-    transition: `opacity 200ms ${SWAP_EASE}, transform 200ms ${SWAP_EASE}, filter 200ms ${SWAP_EASE}`,
-  };
-}
-
-function IconSwap({
-  base,
-  confirm,
-  showConfirm,
-}: {
-  base: React.ReactNode;
-  confirm: React.ReactNode;
-  showConfirm: boolean;
-}) {
-  return (
-    <span className="relative inline-flex w-4 h-4 items-center justify-center">
-      <span className="absolute inset-0 inline-flex items-center justify-center" style={swapStyle(!showConfirm)}>
-        {base}
-      </span>
-      <span className="absolute inset-0 inline-flex items-center justify-center" style={swapStyle(showConfirm)}>
-        {confirm}
-      </span>
-    </span>
-  );
-}
 
 interface Props {
   article: DefuddleResponse;
@@ -163,16 +132,16 @@ export function Reader({ article }: Props) {
         >
           <IconSwap
             base={<HugeiconsIcon icon={FileDownloadIcon} size={16} />}
-            confirm={<HugeiconsIcon icon={Tick01Icon} size={14} />}
-            showConfirm={copied === "md"}
+            alt={<HugeiconsIcon icon={Tick01Icon} size={14} />}
+            showAlt={copied === "md"}
           />
         </button>
 
         <button onClick={handleShare} className="r-icon-btn" aria-label="Share">
           <IconSwap
             base={<HugeiconsIcon icon={Share04Icon} size={16} />}
-            confirm={<HugeiconsIcon icon={Tick01Icon} size={14} />}
-            showConfirm={copied === "share"}
+            alt={<HugeiconsIcon icon={Tick01Icon} size={14} />}
+            showAlt={copied === "share"}
           />
         </button>
 

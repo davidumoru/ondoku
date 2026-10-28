@@ -3,6 +3,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PlayIcon, PauseIcon, StopIcon } from "@hugeicons/core-free-icons";
 import type { TtsState } from "./hooks/useTts";
+import { IconSwap } from "./IconSwap";
 
 interface TtsControlsProps {
   ttsState: TtsState;
@@ -11,17 +12,6 @@ interface TtsControlsProps {
   onPlay: () => void;
   onPause: () => void;
   onStop: () => void;
-}
-
-const SWAP_EASE = "cubic-bezier(0.2, 0, 0, 1)";
-
-function swapStyle(visible: boolean): React.CSSProperties {
-  return {
-    opacity: visible ? 1 : 0,
-    transform: `scale(${visible ? 1 : 0.25})`,
-    filter: `blur(${visible ? 0 : 4}px)`,
-    transition: `opacity 200ms ${SWAP_EASE}, transform 200ms ${SWAP_EASE}, filter 200ms ${SWAP_EASE}`,
-  };
 }
 
 export function TtsControls({
@@ -49,14 +39,11 @@ export function TtsControls({
           color: ttsError ? accentColor : undefined,
         }}
       >
-        <span className="relative inline-flex w-4 h-4 items-center justify-center">
-          <span className="absolute inset-0 inline-flex items-center justify-center" style={swapStyle(!isPlaying)}>
-            <HugeiconsIcon icon={PlayIcon} size={16} />
-          </span>
-          <span className="absolute inset-0 inline-flex items-center justify-center" style={swapStyle(isPlaying)}>
-            <HugeiconsIcon icon={PauseIcon} size={16} />
-          </span>
-        </span>
+        <IconSwap
+          base={<HugeiconsIcon icon={PlayIcon} size={16} />}
+          alt={<HugeiconsIcon icon={PauseIcon} size={16} />}
+          showAlt={isPlaying}
+        />
       </button>
 
       {isActive && (
