@@ -1,23 +1,26 @@
 "use client";
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import { themes, fonts, DEFAULT_PREFS, type Prefs, type Theme, type Font } from "../constants";
+import { themes, fonts, sizes, DEFAULT_PREFS, type Prefs } from "../constants";
 
 const PREFS_KEY = "ondoku-prefs";
 const PREFS_EVENT = "ondoku-prefs-change";
 
 let cache: { raw: string | null; value: Prefs } | null = null;
 
-// Memoized by raw string so useSyncExternalStore's snapshot identity stays stable.
 function parsePrefs(raw: string | null): Prefs {
   if (cache && cache.raw === raw) return cache.value;
   let value: Prefs = DEFAULT_PREFS;
   if (raw) {
     try {
       const parsed = { ...DEFAULT_PREFS, ...JSON.parse(raw) };
-      if (!(parsed.theme in themes)) parsed.theme = DEFAULT_PREFS.theme;
-      if (!(parsed.font in fonts)) parsed.font = DEFAULT_PREFS.font;
-      if (typeof parsed.highlight !== "boolean") parsed.highlight = DEFAULT_PREFS.highlight;
+      if (!Object.hasOwn(themes, parsed.theme))
+        parsed.theme = DEFAULT_PREFS.theme;
+      if (!Object.hasOwn(fonts, parsed.font)) parsed.font = DEFAULT_PREFS.font;
+      if (!sizes.some((s) => s.value === parsed.size))
+        parsed.size = DEFAULT_PREFS.size;
+      if (typeof parsed.highlight !== "boolean")
+        parsed.highlight = DEFAULT_PREFS.highlight;
       value = parsed;
     } catch {
       value = DEFAULT_PREFS;
@@ -27,8 +30,12 @@ function parsePrefs(raw: string | null): Prefs {
   return value;
 }
 
-function getSnapshot(): Prefs {
-  return parsePrefs(localStorage.getItem(PREFS_KEY));
+function readPrefs(): Prefs {
+  try {
+    return parsePrefs(localStorage.getItem(PREFS_KEY));
+  } catch {
+    return DEFAULT_PREFS;
+  }
 }
 
 function getServerSnapshot(): Prefs {
@@ -45,13 +52,16 @@ function subscribe(callback: () => void): () => void {
 }
 
 export function usePrefs() {
-  const prefs = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const prefs = useSyncExternalStore(subscribe, readPrefs, getServerSnapshot);
   const t = themes[prefs.theme];
 
   const set = useCallback(<K extends keyof Prefs>(key: K, value: Prefs[K]) => {
-    const current = parsePrefs(localStorage.getItem(PREFS_KEY));
-    const next = { ...current, [key]: value };
-    localStorage.setItem(PREFS_KEY, JSON.stringify(next));
+    const next = { ...readPrefs(), [key]: value };
+    try {
+      localStorage.setItem(PREFS_KEY, JSON.stringify(next));
+    } catch {
+      return;
+    }
     window.dispatchEvent(new Event(PREFS_EVENT));
   }, []);
 
@@ -64,5 +74,3 @@ export function usePrefs() {
 
   return { prefs, set, t };
 }
-
-export type { Theme, Font, Prefs };
