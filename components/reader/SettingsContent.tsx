@@ -1,11 +1,27 @@
 "use client";
 
-import { themes, fonts, sizes, type ThemeColors, type Prefs, type Theme, type Font } from "./constants";
+import {
+  themes,
+  fonts,
+  sizes,
+  type ThemeColors,
+  type Prefs,
+  type Theme,
+  type Font,
+} from "./constants";
 
 interface SettingsContentProps {
   t: ThemeColors;
   prefs: Prefs;
   set: <K extends keyof Prefs>(key: K, value: Prefs[K]) => void;
+}
+
+function optionStyle(t: ThemeColors, selected: boolean): React.CSSProperties {
+  return {
+    background: selected ? t.fg : "transparent",
+    color: selected ? t.bg : t.fg,
+    borderColor: selected ? t.fg : t.border,
+  };
 }
 
 export function SettingsContent({ t, prefs, set }: SettingsContentProps) {
@@ -31,10 +47,16 @@ export function SettingsContent({ t, prefs, set }: SettingsContentProps) {
                     : "none",
               }}
             >
-              <span className="r-swatch-preview" style={{ color: themes[key].fg }}>
+              <span
+                className="r-swatch-preview"
+                style={{ color: themes[key].fg }}
+              >
                 Aa
               </span>
-              <span className="r-swatch-name" style={{ color: themes[key].muted }}>
+              <span
+                className="r-swatch-name"
+                style={{ color: themes[key].muted }}
+              >
                 {themes[key].label}
               </span>
             </button>
@@ -52,13 +74,12 @@ export function SettingsContent({ t, prefs, set }: SettingsContentProps) {
               key={key}
               onClick={() => set("font", key)}
               className="r-font-btn"
-              style={{
-                background: prefs.font === key ? t.fg : "transparent",
-                color: prefs.font === key ? t.bg : t.fg,
-                borderColor: prefs.font === key ? t.fg : t.border,
-              }}
+              style={optionStyle(t, prefs.font === key)}
             >
-              <span className="r-font-sample" style={{ fontFamily: fonts[key].value }}>
+              <span
+                className="r-font-sample"
+                style={{ fontFamily: fonts[key].value }}
+              >
                 Ag
               </span>
               <span className="r-font-name">{fonts[key].label}</span>
@@ -77,13 +98,12 @@ export function SettingsContent({ t, prefs, set }: SettingsContentProps) {
               key={s.value}
               onClick={() => set("size", s.value)}
               className="r-size-btn"
-              style={{
-                background: prefs.size === s.value ? t.fg : "transparent",
-                color: prefs.size === s.value ? t.bg : t.fg,
-                borderColor: prefs.size === s.value ? t.fg : t.border,
-              }}
+              style={optionStyle(t, prefs.size === s.value)}
             >
-              <span className="r-size-letter" style={{ fontSize: `${s.value}px` }}>
+              <span
+                className="r-size-letter"
+                style={{ fontSize: `${s.value}px` }}
+              >
                 A
               </span>
             </button>
