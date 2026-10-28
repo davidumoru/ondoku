@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { GeistPixelSquare } from "geist/font/pixel";
 import { Lora, Merriweather, Inter, Source_Sans_3 } from "next/font/google";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 import "@/components/reader/reader.css";
 
@@ -19,7 +20,6 @@ const sourceSans = Source_Sans_3({
   variable: "--font-source-sans",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const DESCRIPTION =
   "Read anything, beautifully. Paste a URL and read it clean — or have it read aloud.";
 
@@ -69,7 +69,11 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" className="dark">
       <body
